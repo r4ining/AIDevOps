@@ -1,6 +1,6 @@
 #!/bin/bash
 
-helm uninstall <release>
+helm uninstall -n observe kube-prometheus-stack
 
 echo "Delete CRD"
 kubectl delete crd alertmanagerconfigs.monitoring.coreos.com

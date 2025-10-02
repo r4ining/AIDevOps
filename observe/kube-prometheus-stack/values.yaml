@@ -20,7 +20,7 @@ kubeVersionOverride: ""
 
 ## Provide a name to substitute for the full names of resources
 ##
-fullnameOverride: ""
+fullnameOverride: "prom"
 
 ## Labels to apply to all resources
 ##
@@ -340,7 +340,8 @@ global:
 
   ## Global image registry to use if it needs to be overridden for some specific use cases (e.g local registries, custom images, ...)
   ##
-  imageRegistry: ""
+  # imageRegistry: ""
+  imageRegistry: "swr.cn-east-3.myhuaweicloud.com/r4in"
 
   ## Reference to one or more secrets to be used when pulling images
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
@@ -2431,6 +2432,7 @@ kubeStateMetrics:
 ## Configuration for kube-state-metrics subchart
 ##
 kube-state-metrics:
+  fullnameOverride: "kube-state-metrics"
   namespaceOverride: ""
   rbac:
     create: true
@@ -2527,6 +2529,7 @@ nodeExporter:
 ##
 prometheus-node-exporter:
   namespaceOverride: ""
+  fullnameOverride: "node-exporter"
   podLabels:
     ## Add the 'node-exporter' label to be used by serviceMonitor and podMonitor to match standard common usage in rules and grafana dashboards
     ##
@@ -2624,7 +2627,7 @@ prometheusOperator:
   enabled: true
 
   ## Use '{{ template "kube-prometheus-stack.fullname" . }}-operator' by default
-  fullnameOverride: ""
+  fullnameOverride: "prometheus-operator"
 
   ## Number of old replicasets to retain ##
   ## The default value is 10, 0 will garbage-collect old replicasets ##

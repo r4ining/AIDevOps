@@ -1,73 +1,40 @@
 {{/*
-Expand the name of the chart.
+Copyright Broadcom, Inc. All Rights Reserved.
+SPDX-License-Identifier: APACHE-2.0
 */}}
-{{- define "grafana-operator.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
-{{- end }}
+
+{{/* vim: set filetype=mustache: */}}
 
 {{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
+Return the proper image name
 */}}
-{{- define "grafana-operator.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
-{{- end }}
-
+{{- define "grafana-operator.getBaseImage" -}}
+{{- $registryName := .image.registry -}}
+{{- $repositoryName := .image.repository -}}
 {{/*
-Allow the release namespace to be overridden
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
+Also, we can't use a single if because lazy evaluation is not an option
 */}}
-{{- define "grafana-operator.namespace" -}}
-{{ .Values.namespaceOverride | default .Release.Namespace }}
+{{- if .context.Values.global }}
+    {{- if .context.Values.global.imageRegistry }}
+        {{- printf "%s/%s" .context.Values.global.imageRegistry $repositoryName -}}
+    {{- else -}}
+        {{- printf "%s/%s" $registryName $repositoryName -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s" $registryName $repositoryName -}}
+{{- end -}}
 {{- end -}}
 
-{{/*
-Create chart name and version as used by the chart label.
-*/}}
-{{- define "grafana-operator.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-{{- end }}
 
 {{/*
-Common labels
-*/}}
-{{- define "grafana-operator.labels" -}}
-helm.sh/chart: {{ include "grafana-operator.chart" . }}
-{{ include "grafana-operator.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-app.kubernetes.io/part-of: grafana-operator
-{{- with .Values.additionalLabels }}
-{{ toYaml . }}
-{{- end }}
-{{- end }}
-
-{{/*
-Selector labels
-*/}}
-{{- define "grafana-operator.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "grafana-operator.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-
-{{/*
-Create the name of the service account to use
+Create the name of the grafana-operator service account to use
 */}}
 {{- define "grafana-operator.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "grafana-operator.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
+{{- if .Values.operator.serviceAccount.create -}}
+    {{ default (printf "%s" (include "common.names.fullname" .)) .Values.operator.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.operator.serviceAccount.name }}
+{{- end -}}
+{{- end -}}

@@ -1,51 +1,181 @@
-{{- if .Values.rbac.create -}}
-{{ $rbac := .Files.Get "files/rbac.yaml" | fromYaml  }}
-{{ $rbacOpenShift := .Files.Get "files/rbac-openshift.yaml" | fromYaml  }}
-{{- $watchNamespaces := coalesce .Values.watchNamespaces .Values.namespaceOverride .Release.Namespace  }}
-{{- $namespaceScoped := false }}
-{{- $isOpenShift := false }}
-{{- if or (.Values.namespaceScope) (.Values.watchNamespaces) }}
-{{- $namespaceScoped = true }}
-{{- end }}
-{{- if (.Values.isOpenShift) }}
-  {{- $isOpenShift = true }}
-{{- end }}
-{{- $operatorNamespace := .Release.Namespace }}
-{{- range ( split "," $watchNamespaces ) }}
----
+{{- /*
+Copyright Broadcom, Inc. All Rights Reserved.
+SPDX-License-Identifier: APACHE-2.0
+*/}}
+
+{{- if .Values.operator.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
-kind: {{ if not $namespaceScoped }}Cluster{{ end }}Role
+{{- if .Values.operator.namespaceScope }}
+kind: Role
+{{- else }}
+kind: ClusterRole
+{{- end }}
 metadata:
-  {{- if $namespaceScoped }}
-  namespace: {{ . }}
+  name: {{ include "common.names.fullname.namespace" . }}
+  {{- if .Values.operator.namespaceScope }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   {{- end }}
-  name: {{ include "grafana-operator.fullname" $ }}
-  labels:
-    {{- include "grafana-operator.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: operator
+  labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
 rules:
-  {{- toYaml $rbac.rules | nindent 2 }}
-  {{- if $isOpenShift }}
-  {{- toYaml $rbacOpenShift.rules | nindent 2 -}}
-  {{- end }}
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - persistentvolumeclaims
+      - secrets
+      - serviceaccounts
+      - services
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - get
+      - list
+      - patch
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - grafana.integreatly.org
+    resources:
+      - grafanaalertrulegroups
+      - grafanacontactpoints
+      - grafanadashboards
+      - grafanadatasources
+      - grafanafolders
+      - grafanalibrarypanels
+      - grafanamutetimings
+      - grafananotificationpolicies
+      - grafananotificationpolicyroutes
+      - grafananotificationtemplates
+      - grafanas
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - grafana.integreatly.org
+    resources:
+      - grafanaalertrulegroups/finalizers
+      - grafanacontactpoints/finalizers
+      - grafanadashboards/finalizers
+      - grafanadatasources/finalizers
+      - grafanafolders/finalizers
+      - grafanalibrarypanels/finalizers
+      - grafanamutetimings/finalizers
+      - grafananotificationpolicies/finalizers
+      - grafananotificationpolicyroutes/finalizers
+      - grafananotificationtemplates/finalizers
+      - grafanas/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - grafana.integreatly.org
+    resources:
+      - grafanaalertrulegroups/status
+      - grafanacontactpoints/status
+      - grafanadashboards/status
+      - grafanadatasources/status
+      - grafanafolders/status
+      - grafanalibrarypanels/status
+      - grafanamutetimings/status
+      - grafananotificationpolicies/status
+      - grafananotificationpolicyroutes/status
+      - grafananotificationtemplates/status
+      - grafanas/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - route.openshift.io
+    resources:
+      - routes
+      - routes/custom-host
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - update
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: {{ if not $namespaceScoped }}Cluster{{ end }}RoleBinding
+{{- if .Values.operator.namespaceScope }}
+kind: RoleBinding
+{{- else }}
+kind: ClusterRoleBinding
+{{- end }}
 metadata:
-  name: {{ include "grafana-operator.fullname" $ }}
-  {{- if $namespaceScoped }}
-  namespace: {{ . }}
+  name: {{ include "common.names.fullname.namespace" . }}
+  labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
-  labels:
-    {{- include "grafana-operator.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: operator
+  {{- if .Values.operator.namespaceScope }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  {{- end }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "grafana-operator.serviceAccountName" $ }}
-    namespace: {{ include "grafana-operator.namespace" $ }}
+    name:  {{ include "grafana-operator.serviceAccountName" . }}
+    namespace: {{ include "common.names.namespace" . | quote }}
 roleRef:
-  kind: {{ if not $namespaceScoped }}Cluster{{ end }}Role
-  name: {{ include "grafana-operator.fullname" $ }}
+  {{- if .Values.operator.namespaceScope }}
+  kind: Role
+  {{- else }}
+  kind: ClusterRole
+  {{- end }}
+  name: {{ include "common.names.fullname.namespace" . }}
   apiGroup: rbac.authorization.k8s.io
-{{- end }}
 {{- end }}
