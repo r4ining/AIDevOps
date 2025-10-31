@@ -1,0 +1,5 @@
+bases:
+- ../envs/environments.yaml
+
+helmfiles:
+- ../releases/

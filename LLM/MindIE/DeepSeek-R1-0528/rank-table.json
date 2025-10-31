@@ -1,0 +1,99 @@
+{
+    "version": "1.0",
+    "server_count": "2",
+    "server_list": [
+        {
+            "server_id": "10.1.2.10",
+            "container_ip": "10.1.2.10",
+            "device": [
+                {
+                    "device_id": "0",
+                    "device_ip": "10.1.1.11",
+                    "rank_id": "0"
+                },
+                {
+                    "device_id": "1",
+                    "device_ip": "10.1.1.12",
+                    "rank_id": "1"
+                },
+                {
+                    "device_id": "2",
+                    "device_ip": "10.1.1.13",
+                    "rank_id": "2"
+                },
+                {
+                    "device_id": "3",
+                    "device_ip": "10.1.1.14",
+                    "rank_id": "3"
+                },
+                {
+                    "device_id": "4",
+                    "device_ip": "10.1.1.15",
+                    "rank_id": "4"
+                },
+                {
+                    "device_id": "5",
+                    "device_ip": "10.1.1.16",
+                    "rank_id": "5"
+                },
+                {
+                    "device_id": "6",
+                    "device_ip": "10.1.1.17",
+                    "rank_id": "6"
+                },
+                {
+                    "device_id": "7",
+                    "device_ip": "10.1.1.18",
+                    "rank_id": "7"
+                }
+            ]
+        },
+        {
+            "server_id": "10.1.2.11",
+            "container_ip": "10.1.2.11",
+            "device": [
+                {
+                    "device_id": "0",
+                    "device_ip": "10.1.1.19",
+                    "rank_id": "8"
+                },
+                {
+                    "device_id": "1",
+                    "device_ip": "10.1.1.20",
+                    "rank_id": "9"
+                },
+                {
+                    "device_id": "2",
+                    "device_ip": "10.1.1.21",
+                    "rank_id": "10"
+                },
+                {
+                    "device_id": "3",
+                    "device_ip": "10.1.1.22",
+                    "rank_id": "11"
+                },
+                {
+                    "device_id": "4",
+                    "device_ip": "10.1.1.23",
+                    "rank_id": "12"
+                },
+                {
+                    "device_id": "5",
+                    "device_ip": "10.1.1.24",
+                    "rank_id": "13"
+                },
+                {
+                    "device_id": "6",
+                    "device_ip": "10.1.1.25",
+                    "rank_id": "14"
+                },
+                {
+                    "device_id": "7",
+                    "device_ip": "10.1.1.26",
+                    "rank_id": "15"
+                }
+            ]
+        }
+    ],
+    "status": "completed"
+}

@@ -1,0 +1,85 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snmp-h3c-switch-targets
+  namespace: observe
+  labels:
+    app: snmp-h3c-switch
+spec:
+  ports:
+  - name: snmp
+    port: 161
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: snmp-h3c-switch-targets
+  namespace: observe
+  labels:
+    app: snmp-h3c-switch
+subsets:
+- addresses:
+  - ip: 172.168.255.11
+  - ip: 172.168.255.12
+  - ip: 172.168.254.254
+  - ip: 172.168.255.253
+  - ip: 172.168.255.101
+  - ip: 172.168.255.252
+  - ip: 10.10.252.99
+  ports:
+  - port: 161
+    protocol: TCP
+    name: snmp
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: kube-prometheus-stack
+  name: snmp-h3c-switch
+  namespace: observe
+spec:
+  jobLabel: snmp-h3c-switch
+  selector:
+    matchLabels:
+      app: snmp-h3c-switch
+      # app.kubernetes.io/instance: kube-prometheus-stack
+  endpoints:
+  - interval: 30s
+    params:
+      auth:
+      - h3ccs_auth
+      module:
+      - h3ccs_system
+      - h3ccs_interface
+      - h3ccs_optical
+      # target:
+      # - 172.168.255.11
+    path: /snmp
+    port: snmp
+    relabelings:
+    - action: replace
+      sourceLabels: [__address__]
+      regex: "([^:]+)(?::.*)?"
+      targetLabel: __param_target
+      replacement: "$1"
+    - action: replace
+      sourceLabels: [__param_target]
+      targetLabel: instance
+    - action: replace
+      replacement: prometheus-snmp-exporter.observe.svc:9116
+      targetLabel: __address__
+    # - action: replace
+    #   replacement: H3C
+    #   targetLabel: brand
+    # - action: replace
+    #   replacement: switch
+    #   targetLabel: role
+    # - action: replace
+    #   replacement: shanghai
+    #   targetLabel: region
+    scrapeTimeout: 20s
+
