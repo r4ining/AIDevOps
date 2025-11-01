@@ -1,0 +1,15 @@
+bases:
+- ../envs/environments.yaml
+---
+releases:
+- chart: ../../charts/common/traefik
+  version: v3.5.2
+  wait: true
+  installed: true
+  name: traefik
+  namespace: traefik
+  skipDeps: true
+  labels:
+    app: traefik
+  values:
+  - ../values/traefik.yaml.gotmpl

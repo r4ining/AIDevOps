@@ -1,0 +1,86 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: prometheus
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      app: "grafana"
+  datasource:
+    name: prometheus
+    type: prometheus
+    access: proxy
+    basicAuth: false
+    url: http://prom-prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      "tlsSkipVerify": true
+      "timeInterval": "5s"
+
+---
+# apiVersion: grafana.integreatly.org/v1beta1
+# kind: GrafanaDatasource
+# metadata:
+#   name: loki
+# spec:
+#   allowCrossNamespaceImport: true
+#   instanceSelector:
+#     matchLabels:
+#       app: "grafana"
+#   datasource:
+#     jsonData:
+#       timeInterval: 15s
+#       tlsSkipVerify: true
+#     name: loki
+#     type: loki
+#     access: proxy
+#     isDefault: false
+#     url: http://loki-querier:3100
+#     editable: true
+
+---
+# kind: Secret
+# apiVersion: v1
+# metadata:
+#   name: credentials
+#   namespace: grafana
+# stringData:
+#   PROMETHEUS_USERNAME: root
+#   PROMETHEUS_PASSWORD: secret
+# type: Opaque
+# ---
+# apiVersion: grafana.integreatly.org/v1beta1
+# kind: GrafanaDatasource
+# metadata:
+#   name: prometheus
+# spec:
+#   valuesFrom:
+#     - targetPath: "basicAuthUser"
+#       valueFrom:
+#         secretKeyRef:
+#           name: "credentials"
+#           key: "PROMETHEUS_USERNAME"
+#     - targetPath: "secureJsonData.basicAuthPassword"
+#       valueFrom:
+#         secretKeyRef:
+#           name: "credentials"
+#           key: "PROMETHEUS_PASSWORD"
+#   instanceSelector:
+#     matchLabels:
+#       dashboards: "grafana"
+#   datasource:
+#     name: prometheus
+#     type: prometheus
+#     access: proxy
+#     basicAuth: true
+#     url: http://prometheus-service:9090
+#     isDefault: true
+#     editable: true
+#     jsonData:
+#       "tlsSkipVerify": true
+#       "timeInterval": "5s"
+#     basicAuthUser: ${PROMETHEUS_USERNAME}
+#     secureJsonData:
+#       "basicAuthPassword": ${PROMETHEUS_PASSWORD} # Notice the braces around PROMETHEUS_PASSWORD

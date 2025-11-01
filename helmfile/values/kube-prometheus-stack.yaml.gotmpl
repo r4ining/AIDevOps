@@ -1,2 +1,46 @@
+fullnameOverride: "prom"
+
 global:
   imageRegistry: {{ .Values | get "__REGISTRY__" "" }}
+
+defaultRules:
+  create: {{ .Values.__PROMETHEUS_CREATE_DEFAULT_RULES__ }}
+
+alertmanager:
+  ingress:
+    enabled: {{ .Values.__PROMETHEUS_INGRESS_ENABLE__ }}
+    ingressClassName: ""
+    annotations: {}
+    labels: {}
+    # servicePort: 8081
+    # serviceName: prom-alertmanager
+    ## Hosts must be provided if Ingress is enabled.
+    ##
+    hosts:
+     - alertmanager.{{ .Values.__DOMAIN__ }}
+    paths: []
+    # - /
+    # pathType: ImplementationSpecific
+    tls: []
+    # - secretName: alertmanager-general-tls
+    #   hosts:
+    #   - alertmanager.example.com
+
+
+prometheus:
+  ingress:
+    enabled: {{ .Values.__PROMETHEUS_INGRESS_ENABLE__ }}
+    ingressClassName: ""
+    annotations: {}
+    labels: {}
+    ## Redirect ingress to an additional defined port on the service
+    # servicePort: 8081
+    hosts:
+      - prometheus.{{ .Values.__DOMAIN__ }}
+    paths: []
+    # - /
+    tls: []
+      # - secretName: prometheus-general-tls
+      #   hosts:
+      #     - prometheus.example.com
+

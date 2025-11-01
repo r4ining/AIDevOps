@@ -2,4 +2,5 @@ bases:
 - ../envs/environments.yaml
 
 helmfiles:
-- ../releases/
+  - ../releases/kube-prometheus-stack.yaml
+  - ../releases/grafana-operator.yaml

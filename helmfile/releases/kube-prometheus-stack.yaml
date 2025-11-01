@@ -8,7 +8,8 @@ releases:
   installed: true
   name: kube-prometheus-stack
   namespace: observe
+  skipDeps: true
   labels:
     app: kube-prometheus-stack
   values:
-  - ../values/kube-prometheus-stack.gotmpl
+  - ../values/kube-prometheus-stack.yaml.gotmpl

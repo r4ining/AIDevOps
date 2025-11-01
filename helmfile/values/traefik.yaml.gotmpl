@@ -1,0 +1,19 @@
+image:
+  registry: {{ .Values | get "__REGISTRY__" "" }}
+
+deployment:
+  # -- Enable deployment
+  enabled: true
+  # -- Deployment or DaemonSet
+  kind: DaemonSet
+
+ports:
+  web:
+    port: 8000
+    # 指定 hostPort，将会在节点上监听 hostPort 端口，后续才可以通过 ingress 域名访问
+    hostPort: 80
+
+service:
+  enabled: true
+  single: true
+  type: ClusterIP

@@ -1,0 +1,124 @@
+# apiVersion: operator.victoriametrics.com/v1beta1
+# kind: VMRule
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    # labels与Prometheus CRD中match ruleSelector -> matchLabels保持一致。
+    release: kube-prometheus-stack
+    prometheus: k8s
+  name: network
+  namespace: monitor
+spec:
+  groups:
+  - name: Network
+    rules:
+      - alert: "K8S节点网络不可达"
+        expr: 'kube_node_status_condition{condition="NetworkUnavailable",status="true"} == 1'
+        for: 2m
+        labels:
+          severity: Critical
+        annotations:
+          summary: K8S节点网络不可达 (instance {{ $labels.instance }})
+          description: "K8S节点网络不可达: {{ $labels.node }}"
+
+      - alert: HighNetworkReceivePacketLoss
+        expr: |
+          sum by(instance) (
+            rate(node_network_receive_errs_total{device!~"lo"}[5m])
+            /
+            (rate(node_network_receive_packets_total{device!~"lo"}[5m]) + rate(node_network_receive_errs_total{device!~"lo"}[5m]))
+          ) > 0.01
+        for: 5m
+        labels:
+          severity: Warning
+        annotations:
+          summary: "节点 {{ $labels.instance }} 网络接收方向丢包率高"
+          description: |
+            节点 {{ $labels.instance }} 在过去 5 分钟内接收方向的网络丢包率持续超过 1%。请检查该节点的网卡状态、物理链路或网络拥塞情况。
+
+      - alert: HighNetworkTransmitPacketLoss
+        expr: |
+          sum by(instance) (
+            rate(node_network_transmit_errs_total{device!~"lo"}[5m])
+            /
+            (rate(node_network_transmit_packets_total{device!~"lo"}[5m]) + rate(node_network_transmit_errs_total{device!~"lo"}[5m]))
+          ) > 0.01
+        for: 5m
+        labels:
+          severity: Warning
+        annotations:
+          summary: "节点 {{ $labels.instance }} 网络发送方向丢包率高"
+          description: |
+            节点 {{ $labels.instance }} 在过去 5 分钟内发送方向的网络丢包率持续超过 1%。请检查该节点的网卡状态、物理链路或网络带宽使用情况。
+
+      # https 证书有效期
+      - alert: SSL证书即将过期
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 30
+        for: 10m
+        labels:
+          severity: Warning
+        annotations:
+          summary: "域名 {{ $labels.instance }} 的SSL证书将在 30 天内过期"
+          description: |-
+            证书即将过期，请及时更新
+            域名: {{ $labels.instance }}
+            剩余过期天数: {{ printf "%.1f" $value }} 天
+
+      - alert: SSL证书即将过期
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 7
+        for: 10m
+        labels:
+          severity: Critical
+        annotations:
+          summary: "域名 {{ $labels.instance }} 的SSL证书将在 7 天内过期"
+          description: |-
+            证书即将过期，请及时更新
+            域名: {{ $labels.instance }}
+            剩余过期天数: {{ printf "%.1f" $value }} 天
+
+      # cilium  
+      # - alert: CiliumAgentDown
+      #   expr: absent(up{job="cilium-agent"} == 1)
+      #   for: 2m
+      #   labels:
+      #     severity: Critical
+      #   annotations:
+      #     summary: "Cilium Agent 容器未运行"
+      #     description: "在过去的 2 分钟内未检测到任何 Cilium Agent 实例存活，可能导致网络异常。"
+
+      # - alert: CiliumNetworkPacketDropHigh
+      #   expr: rate(cilium_drop_count_total[5m]) > 10
+      #   for: 1m
+      #   labels:
+      #     severity: Warning
+      #   annotations:
+      #     summary: "Cilium 网络丢包率过高"
+      #     description: "Cilium 在过去 5 分钟内每秒丢弃的数据包超过 10 个，可能存在网络配置或通信异常。"
+
+      # - alert: CiliumBPFMapOperationErrors
+      #   expr: increase(cilium_bpf_map_ops_total{result="error"}[5m]) > 5
+      #   for: 2m
+      #   labels:
+      #     severity: Warning
+      #   annotations:
+      #     summary: "Cilium BPF Map 操作失败过多"
+      #     description: "在过去 5 分钟内 BPF Map 操作出现超过 5 次失败，可能影响网络转发功能。"
+
+      # - alert: HostUnusualNetworkThroughputIn
+      #   expr: '(sum by (instance) (rate(node_network_receive_bytes_total[2m])) / 1024 / 1024 > 100) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}'
+      #   for: 5m
+      #   labels:
+      #     severity: warning
+      #   annotations:
+      #     summary: Host unusual network throughput in (instance {{ $labels.instance }})
+      #     description: "主机网卡可能正在接收大量数据 (> 100 MB/s)\n  主机IP: {{ $labels.instance }}\n  主机名: {{ $labels.nodename }}  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      # - alert: HostUnusualNetworkThroughputOut
+      #   expr: '(sum by (instance) (rate(node_network_transmit_bytes_total[2m])) / 1024 / 1024 > 100) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}'
+      #   for: 5m
+      #   labels:
+      #     severity: warning
+      #   annotations:
+      #     summary: Host unusual network throughput out (instance {{ $labels.instance }})
+      #     description: "主机正在发送大量数据 (> 100 MB/s)\n  主机IP: {{ $labels.instance }}\n  主机名: {{ $labels.nodename }}  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

@@ -4,8 +4,7 @@
 
 image:  # @schema additionalProperties: false
   # -- Traefik image host registry
-  # registry: docker.io
-  registry: swr.cn-east-3.myhuaweicloud.com/r4in
+  registry: docker.io
   # -- Traefik image repository
   repository: traefik
   # -- defaults to appVersion. It's used for version checking, even prefixed with experimental- or latest-.

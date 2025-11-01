@@ -192,7 +192,8 @@ spec:
                 pathType: {{ include "common.tplvalues.render" (dict "value" .Values.grafana.ingress.pathType "context" $) }}
                 backend:
                   service:
-                    name: {{ printf "%s-grafana-service" (include "common.names.fullname" .) | trunc 63 | trimSuffix "-" }}
+                    # name: {{ printf "%s-grafana-service" (include "common.names.fullname" .) | trunc 63 | trimSuffix "-" }}
+                    name: grafana-service
                     port:
                       name: grafana
           {{- if .Values.grafana.ingress.host }}

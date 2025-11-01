@@ -1,0 +1,22 @@
+global:
+  imageRegistry: {{ .Values | get "__REGISTRY__" "" }}
+
+grafana:
+  labels:
+    app: grafana
+  config:
+    security:
+      # ## Grafana Admin credentials, if omitted they will be admin:<random_pass>
+      admin_user: {{ .Values.__GRAFANA_ADMIN_USER__ }}
+      admin_password: {{ .Values.__GRAFANA_ADMIN_PASSWORD__ }}
+      disable_gravatar: "false"
+  ingress:
+    enabled: {{ .Values.__GRAFANA_INGRESS_ENABLE__ }}
+    ingressClassName: ""
+    host: grafana.{{ .Values.__DOMAIN__ }}
+    path: /
+    pathType: ImplementationSpecific
+    labels: {}
+    annotations: {}
+    tls: false
+    tlsSecret: grafana.local-tls

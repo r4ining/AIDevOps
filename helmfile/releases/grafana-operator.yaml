@@ -1,0 +1,15 @@
+bases:
+- ../envs/environments.yaml
+---
+releases:
+- chart: ../../charts/observe/grafana-operator
+  version: 5.19.4
+  wait: true
+  installed: true
+  name: grafana-operator
+  namespace: observe
+  skipDeps: true
+  labels:
+    app: grafana-operator
+  values:
+  - ../values/grafana-operator.yaml.gotmpl

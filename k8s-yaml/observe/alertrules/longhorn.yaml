@@ -1,0 +1,94 @@
+# apiVersion: operator.victoriametrics.com/v1beta1
+# kind: VMRule
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    # labels与Prometheus CRD中match ruleSelector -> matchLabels保持一致。
+    release: kube-prometheus-stack
+    prometheus: k8s
+  name: k8s
+  namespace: monitor
+spec:
+  groups:
+  - name: longhorn.rules
+    rules:
+    - alert: LonghornVolumeActualSpaceUsedWarning
+      annotations:
+        description: Longhorn 卷 {{$labels.volume}} 在 {{$labels.node}} 上的实际空间使用率已达到 {{$value}}%，
+          持续超过 5 分钟。
+        summary: Longhorn 卷的实际使用空间超过容量的 90%。
+      expr: (longhorn_volume_actual_size_bytes / longhorn_volume_capacity_bytes) * 100 > 90
+      for: 5m
+      labels:
+        issue: Longhorn 卷 {{$labels.volume}} 在 {{$labels.node}} 上的实际空间使用率过高。
+        severity: Warning
+    - alert: LonghornVolumeStatusCritical
+      annotations:
+        description: Longhorn 卷 {{$labels.volume}} 在 {{$labels.node}} 上的状态为 Fault，
+          持续超过 2 分钟。
+        summary: Longhorn 卷 {{$labels.volume}} 状态为 Fault。
+      expr: longhorn_volume_robustness == 3
+      for: 5m
+      labels:
+        issue: Longhorn 卷 {{$labels.volume}} 状态为 Fault。
+        severity: Critical
+    - alert: LonghornVolumeStatusWarning
+      annotations:
+        description: Longhorn 卷 {{$labels.volume}} 在 {{$labels.node}} 上的状态为 Degraded，
+          持续超过 5 分钟。
+        summary: Longhorn 卷 {{$labels.volume}} 状态为 Degraded。
+      expr: longhorn_volume_robustness == 2
+      for: 5m
+      labels:
+        issue: Longhorn 卷 {{$labels.volume}} 状态为 Degraded。
+        severity: Warning
+    - alert: LonghornNodeStorageWarning
+      annotations:
+        description: 节点 {{$labels.node}} 的存储使用率已达到 {{$value}}%，
+          持续超过 5 分钟。
+        summary: 节点的存储使用率超过 70%。
+      expr: (longhorn_node_storage_usage_bytes / longhorn_node_storage_capacity_bytes) * 100 > 70
+      for: 5m
+      labels:
+        issue: 节点 {{$labels.node}} 的存储使用率过高。
+        severity: Warning
+    - alert: LonghornDiskStorageWarning
+      annotations:
+        description: 节点 {{$labels.node}} 上的磁盘 {{$labels.disk}} 使用率已达到 {{$value}}%，
+          持续超过 5 分钟。
+        summary: 磁盘的存储使用率超过 70%。
+      expr: (longhorn_disk_usage_bytes / longhorn_disk_capacity_bytes) * 100 > 70
+      for: 5m
+      labels:
+        issue: 节点 {{$labels.node}} 上的磁盘 {{$labels.disk}} 使用率过高。
+        severity: Warning
+    - alert: LonghornNodeDown
+      annotations:
+        description: 有 {{$value}} 个 Longhorn 节点已离线超过 5 分钟。
+        summary: Longhorn 节点离线。
+      expr: (avg(longhorn_node_count_total) or on() vector(0)) - (count(longhorn_node_status{condition="ready"} == 1) or on() vector(0)) > 0
+      for: 5m
+      labels:
+        issue: 有 {{$value}} 个 Longhorn 节点已离线。
+        severity: Critical
+    - alert: LonghornInstanceManagerCPUUsageWarning
+      annotations:
+        description: Longhorn 实例管理器 {{$labels.instance_manager}} 在 {{$labels.node}} 上的 CPU 使用量 / CPU 请求率为 {{$value}}%，
+          持续超过 5 分钟。
+        summary: Longhorn 实例管理器 {{$labels.instance_manager}} 在 {{$labels.node}} 上的 CPU 使用量超过请求的 300%。
+      expr: (longhorn_instance_manager_cpu_usage_millicpu/longhorn_instance_manager_cpu_requests_millicpu) * 100 > 300
+      for: 5m
+      labels:
+        issue: Longhorn 实例管理器 {{$labels.instance_manager}} 在 {{$labels.node}} 上的 CPU 使用量超过请求的 3 倍。
+        severity: Warning
+    - alert: LonghornNodeCPUUsageWarning
+      annotations:
+        description: Longhorn 节点 {{$labels.node}} 的 CPU 使用量 / CPU 总容量为 {{$value}}%，
+          持续超过 5 分钟。
+        summary: Longhorn 节点 {{$labels.node}} 的 CPU 压力过高，持续超过 5 分钟。
+      expr: (longhorn_node_cpu_usage_millicpu / longhorn_node_cpu_capacity_millicpu) * 100 > 90
+      for: 5m
+      labels:
+        issue: Longhorn 节点 {{$labels.node}} 的 CPU 压力过高。
+        severity: Warning

@@ -1,0 +1,2 @@
+- `datasources`: Grafana 数据源
+- `alertrules`: Prometheus 告警规则
