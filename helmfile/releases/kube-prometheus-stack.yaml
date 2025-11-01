@@ -1,0 +1,14 @@
+bases:
+- ../envs/environments.yaml
+---
+releases:
+- chart: ../../charts/observe/kube-prometheus-stack
+  version: v0.85.0
+  wait: true
+  installed: true
+  name: kube-prometheus-stack
+  namespace: observe
+  labels:
+    app: kube-prometheus-stack
+  values:
+  - ../values/kube-prometheus-stack.gotmpl

@@ -1,3 +1,5 @@
+# 各个chart中使用到的镜像
+
 # Prometheus
 docker.io/busybox:latest
 docker.io/bats/bats:v1.4.1

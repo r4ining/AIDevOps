@@ -1,4 +1,10 @@
 environments:
   default:
-  development:
-  production:
+    values:
+      - ../envs/default/common.yaml
+
+  dev:
+    values:
+
+  prod:
+    values:

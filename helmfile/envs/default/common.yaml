@@ -1,0 +1,6 @@
+# 镜像仓库，用于覆盖各个 chart 中的全局镜像仓库
+__REGISTRY__: "swr.cn-east-3.myhuaweicloud.com/r4in"
+
+
+
+

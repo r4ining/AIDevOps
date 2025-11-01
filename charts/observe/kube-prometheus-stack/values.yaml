@@ -340,8 +340,7 @@ global:
 
   ## Global image registry to use if it needs to be overridden for some specific use cases (e.g local registries, custom images, ...)
   ##
-  # imageRegistry: ""
-  imageRegistry: "swr.cn-east-3.myhuaweicloud.com/r4in"
+  imageRegistry: ""
 
   ## Reference to one or more secrets to be used when pulling images
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
